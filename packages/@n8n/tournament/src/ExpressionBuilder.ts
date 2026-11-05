@@ -138,6 +138,14 @@ const fixStringNewLines = (node: types.namedTypes.File): types.namedTypes.File =
 		return str.replace(/\n/g, '\\n');
 	};
 	visit(node, {
+		visitTemplateLiteral(path) {
+			this.traverse(path);
+			// recast patches changed quasis back into the original source one by one
+			// and inserts a space between a quasi ending in an identifier character
+			// and the following `${` (e.g. `chk_${x}` -> `chk_ ${x}`), which ends up
+			// in the resulting string. Reprint the whole literal instead.
+			(path.node as { original?: unknown }).original = null;
+		},
 		visitTemplateElement(path) {
 			this.traverse(path);
 			const el = b.templateElement(
